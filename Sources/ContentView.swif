@@ -1,0 +1,91 @@
+import SwiftUI
+
+struct AppleAccount: Identifiable, Codable {
+    var id = UUID()
+    var email: String
+    var isActive: Bool = false
+}
+
+struct BundleID: Identifiable {
+    var id = UUID()
+    var identifier: String
+}
+
+class AccountManager: ObservableObject {
+    @Published var accounts: [AppleAccount] = []
+    @Published var bundleIDs: [BundleID] = []
+    
+    func addAccount(email: String) {
+        accounts.append(AppleAccount(email: email))
+    }
+    
+    func switchAccount(to account: AppleAccount) {
+        for i in 0..<accounts.count {
+            accounts[i].isActive = (accounts[i].id == account.id)
+        }
+    }
+    
+    func deleteBundleID(at offsets: IndexSet) {
+        bundleIDs.remove(atOffsets: offsets)
+    }
+}
+
+struct ContentView: View {
+    @StateObject var manager = AccountManager()
+    @State private var newEmail = ""
+    
+    var body: some View {
+        NavigationView {
+            List {
+                Section(header: Text("Apple Accounts")) {
+                    ForEach(manager.accounts) { account in
+                        HStack {
+                            Text(account.email)
+                            Spacer()
+                            if account.isActive {
+                                Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
+                            }
+                        }
+                        .onTapGesture { manager.switchAccount(to: account) }
+                    }
+                    HStack {
+                        TextField("New Apple ID", text: $newEmail)
+                            .textInputAutocapitalization(.never)
+                        Button("Add") {
+                            if !newEmail.isEmpty {
+                                manager.addAccount(email: newEmail)
+                                newEmail = ""
+                            }
+                        }
+                    }
+                }
+                
+                Section(header: Text("Bundle IDs")) {
+                    if manager.bundleIDs.isEmpty {
+                        Text("No Bundle IDs").foregroundColor(.gray)
+                    }
+                    ForEach(manager.bundleIDs) { bundle in
+                        Text(bundle.identifier)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    // Логика удаления
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                    }
+                }
+            }
+            .navigationTitle("Cert Manager")
+        }
+    }
+}
+
+@main
+struct CertManagerApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
