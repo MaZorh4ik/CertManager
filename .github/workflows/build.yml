@@ -21,12 +21,23 @@ jobs:
 
     - name: Build App
       run: |
-        xcodebuild -project CertManager.xcodeproj -scheme CertManager -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+        # Явно указываем derivedDataPath, чтобы знать точный путь к .app
+        xcodebuild -project CertManager.xcodeproj \
+          -scheme CertManager \
+          -sdk iphoneos \
+          -configuration Release \
+          -derivedDataPath build \
+          CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+          build
 
     - name: Package to IPA
       run: |
+        # Теперь путь точно известен и предсказуем
+        APP_PATH="build/Build/Products/Release-iphoneos/CertManager.app"
+        echo "Looking for app at: $APP_PATH"
+        ls -la "$APP_PATH" # Для отладки: покажет содержимое, если путь верный
         mkdir -p Payload
-        mv build/Release-iphoneos/CertManager.app Payload/
+        cp -R "$APP_PATH" Payload/
         zip -r CertManager.ipa Payload
 
     - name: Upload IPA Artifact
