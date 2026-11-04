@@ -1,0 +1,14 @@
+name: CertManager
+options:
+  bundleIdPrefix: com.mazorh4ik
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  CertManager:
+    type: application
+    platform: iOS
+    sources: [Sources]
+    settings:
+      base:
+        INFOPLIST_FILE: Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.mazorh4ik.certmanager
